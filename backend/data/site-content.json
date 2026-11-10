@@ -1,0 +1,46 @@
+{
+  "testimonials": [
+    {
+      "id": "amina-hassan",
+      "sortOrder": 1,
+      "name": "Amina Hassan",
+      "location": "Nairobi, Kenya",
+      "quote": "Our Maasai Mara trip exceeded every expectation. The guide spotted a leopard within an hour of arriving — truly unforgettable.",
+      "initial": "A",
+      "imageUrl": ""
+    },
+    {
+      "id": "david-chen",
+      "sortOrder": 2,
+      "name": "David Chen",
+      "location": "Singapore",
+      "quote": "Trekrilluxe organized our Mount Kenya climb perfectly. Safe, well-paced, and the crew took care of everything.",
+      "initial": "D",
+      "imageUrl": ""
+    },
+    {
+      "id": "laura-fischer",
+      "sortOrder": 3,
+      "name": "Laura Fischer",
+      "location": "Berlin, Germany",
+      "quote": "From booking to the Diani beach sunset cruise, everything was seamless. Will definitely book our next trip with them.",
+      "initial": "L",
+      "imageUrl": ""
+    }
+  ],
+  "settings": {
+    "companyDescription": "Crafting authentic, responsible and unforgettable East African safari experiences since day one.",
+    "location": "Nairobi, Kenya",
+    "phone": "+254 790 885540",
+    "email": "trekrilluxetoursafaris@proton.me",
+    "officeHours": "Mon - Sat, 8:00 AM - 6:00 PM EAT",
+    "bookingEmail": "trekrilluxetoursafaris@proton.me",
+    "bookingPhone": "+254 790 885540",
+    "whatsapp": "",
+    "socialLinks": [
+      { "id": "facebook", "label": "Facebook", "icon": "f", "url": "" },
+      { "id": "instagram", "label": "Instagram", "icon": "ig", "url": "" },
+      { "id": "x", "label": "Twitter / X", "icon": "x", "url": "" }
+    ]
+  }
+}
