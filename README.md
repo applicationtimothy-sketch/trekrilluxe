@@ -60,10 +60,12 @@ The `public/_redirects` file routes direct visits to extensionless pages such as
 The root `render.yaml` defines the backend as a Render Web Service. To deploy the backend first:
 
 1. Push this project to a Git provider connected to Render, then create a new **Blueprint** in Render using that repository.
-2. Provide `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `FRONTEND_ORIGIN` when prompted. Render generates `ADMIN_TOKEN_SECRET` automatically. Use an admin password of at least 12 characters and set `FRONTEND_ORIGIN` to the exact React site origin (scheme and hostname, without a path or trailing slash). If you deploy the backend first, update `FRONTEND_ORIGIN` to the deployed site origin when it becomes available; do not use `*` in production.
+2. Provide `DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `FRONTEND_ORIGIN`, `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, and `SMTP_FROM_EMAIL` when prompted. Render generates `ADMIN_TOKEN_SECRET` automatically and defaults `SMTP_PORT` to `587`. Use an admin password of at least 12 characters and set `FRONTEND_ORIGIN` to the exact React site origin (scheme and hostname, without a path or trailing slash). If you deploy the backend first, update `FRONTEND_ORIGIN` to the deployed site origin when it becomes available; do not use `*` in production.
 3. Wait for the service to deploy and copy its `https://…onrender.com` URL. Set that URL as `VITE_API_BASE_URL` when you build/deploy the frontend.
 
 The Blueprint uses `backend/`, `npm install`, and `npm start`; Render supplies the port. Keep the database URL, password, and Supabase secret key in Render's private environment settings, never in the frontend or source control. Add the optional M-Pesa variables from the setup section below when you are ready to enable payments.
+
+The contact form saves each message in PostgreSQL and emails a notification to `trekrilluxesafaris@proton.me`. Configure the backend SMTP settings above with credentials for a verified sender mailbox. The visitor's email is set as `Reply-To`; it must not be used as the sender address because SMTP providers reject unauthenticated sender addresses. Use your mail provider's SMTP credentials or token (not a normal account password where SMTP tokens are required). Port `587` uses STARTTLS; port `465` uses TLS.
 
 The API preserves the existing public routes:
 

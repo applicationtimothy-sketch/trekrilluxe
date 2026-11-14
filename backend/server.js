@@ -15,6 +15,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const nodemailer = require('nodemailer');
 const { sql, initializeDatabase } = require('./database');
 
 const PORT = process.env.PORT || 4000;
@@ -63,6 +64,21 @@ function collectBody(req, maxBytes = 1e6) {
 
 function isValidEmail(email) {
   return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function getContactSmtpConfig() {
+  const port = Number(process.env.SMTP_PORT || 587);
+  const config = {
+    host: process.env.SMTP_HOST?.trim(),
+    port,
+    user: process.env.SMTP_USER?.trim(),
+    password: process.env.SMTP_PASSWORD,
+    fromEmail: process.env.SMTP_FROM_EMAIL?.trim()
+  };
+  if (!config.host || !config.user || !config.password || !isValidEmail(config.fromEmail) || !Number.isInteger(port) || port < 1 || port > 65535) {
+    return null;
+  }
+  return config;
 }
 
 function getMpesaConfigError() {
@@ -1084,14 +1100,44 @@ async function handleApi(req, res, pathname) {
       if (missing.length) {
         return sendJSON(res, 400, { success: false, error: 'Missing fields: ' + missing.join(', ') });
       }
-      if (!isValidEmail(body.email)) {
+      const email = typeof body.email === 'string' ? body.email.trim() : '';
+      if (!isValidEmail(email)) {
         return sendJSON(res, 400, { success: false, error: 'Invalid email address' });
+      }
+      const smtpConfig = getContactSmtpConfig();
+      if (!smtpConfig) {
+        return sendJSON(res, 503, { success: false, error: 'Contact email delivery is not configured on the backend.' });
       }
       const [message] = await sql`
         INSERT INTO messages (name, email, phone, subject, message)
-        VALUES (${body.name}, ${body.email}, ${body.phone || ''}, ${body.subject}, ${body.message})
+        VALUES (${body.name}, ${email}, ${body.phone || ''}, ${body.subject}, ${body.message})
         RETURNING id, name, email, phone, subject, message, created_at AS "createdAt"
       `;
+      try {
+        const transport = nodemailer.createTransport({
+          host: smtpConfig.host,
+          port: smtpConfig.port,
+          secure: smtpConfig.port === 465,
+          requireTLS: smtpConfig.port !== 465,
+          auth: { user: smtpConfig.user, pass: smtpConfig.password },
+          connectionTimeout: 10000,
+          greetingTimeout: 10000,
+          socketTimeout: 15000
+        });
+        await transport.sendMail({
+          from: { name: 'Trekrilluxe Tours and Safaris', address: smtpConfig.fromEmail },
+          to: 'trekrilluxesafaris@proton.me',
+          replyTo: { name: body.name, address: email },
+          subject: `Website contact: ${body.subject}`,
+          text: `Name: ${body.name}\nEmail: ${email}\nPhone: ${body.phone || 'Not provided'}\nSubject: ${body.subject}\n\n${body.message}`
+        });
+      } catch (emailError) {
+        console.error('Contact email delivery failed:', emailError.message);
+        return sendJSON(res, 502, {
+          success: false,
+          error: 'Your message was saved, but we could not email the team. Please contact us by phone or try again later.'
+        });
+      }
       sendJSON(res, 201, { success: true, message: 'Thank you! Your message has been received.', data: message });
     } catch (err) {
       sendJSON(res, 400, { success: false, error: err.message });

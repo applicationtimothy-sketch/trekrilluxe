@@ -170,11 +170,30 @@ async function initializeDatabase() {
               jsonb_set(data, '{phone}', ${tx.json('+254 790 885540')}::jsonb, true),
               '{bookingPhone}', ${tx.json('+254 790 885540')}::jsonb, true
             ),
-            '{email}', ${tx.json('trekrilluxetoursafaris@proton.me')}::jsonb, true
+            '{email}', ${tx.json('trekrilluxesafaris@proton.me')}::jsonb, true
           ),
-          '{bookingEmail}', ${tx.json('trekrilluxetoursafaris@proton.me')}::jsonb, true
+          '{bookingEmail}', ${tx.json('trekrilluxesafaris@proton.me')}::jsonb, true
         )
         WHERE id = 1
+      `;
+    }
+
+    const [contactEmailMigration] = await tx`
+      INSERT INTO site_content_migrations (name)
+      VALUES ('trekrilluxe-correct-contact-email')
+      ON CONFLICT (name) DO NOTHING
+      RETURNING name
+    `;
+    if (contactEmailMigration) {
+      await tx`
+        UPDATE site_settings
+        SET data = jsonb_set(data, '{email}', ${tx.json('trekrilluxesafaris@proton.me')}::jsonb, true)
+        WHERE id = 1 AND data->>'email' = 'trekrilluxetoursafaris@proton.me'
+      `;
+      await tx`
+        UPDATE site_settings
+        SET data = jsonb_set(data, '{bookingEmail}', ${tx.json('trekrilluxesafaris@proton.me')}::jsonb, true)
+        WHERE id = 1 AND data->>'bookingEmail' = 'trekrilluxetoursafaris@proton.me'
       `;
     }
 
