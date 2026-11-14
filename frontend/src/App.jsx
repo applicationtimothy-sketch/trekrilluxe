@@ -48,6 +48,29 @@ const pageDetails = {
   }
 };
 
+const homeFaqs = [
+  {
+    question: 'What kinds of trips does Trekrilluxe offer?',
+    answer: 'Trekrilluxe offers wildlife safaris, mountain treks, beach escapes and cultural tours in Kenya and across East Africa.'
+  },
+  {
+    question: 'Which destinations are featured?',
+    answer: 'Featured experiences include Big Five game drives in the Maasai Mara, treks on Mount Kenya and beach trips in Diani.'
+  },
+  {
+    question: 'Can I request a trip tailored to my interests?',
+    answer: 'Yes. Trekrilluxe creates custom itineraries around your pace, budget and interests. Share your plans through the booking or contact page to start planning.'
+  },
+  {
+    question: 'How do I enquire or book a tour?',
+    answer: 'Browse the tours page and choose “Book This Tour,” or send a message through the contact page. The team can follow up using the contact details you provide.'
+  },
+  {
+    question: 'Where is Trekrilluxe Tours and Safaris based?',
+    answer: 'Trekrilluxe Tours and Safaris is based in Nairobi, Kenya, and plans trips across Kenya and East Africa.'
+  }
+];
+
 function getCurrentPage() {
   const path = window.location.pathname.replace(/\/+$/, '');
   const filename = path.split('/').pop()?.replace(/\.html$/, '') || 'index';
@@ -433,6 +456,7 @@ function HomePage() {
           <div className="text-center" style={{ marginTop: 40 }}><a href="/tours" className="btn btn-dark">View All Tours</a></div>
         </div>
       </section>
+      <HomeFaqs />
       <section className="testimonials">
         <div className="container">
           <div className="section-head reveal"><span className="section-tag">Traveler Stories</span><h2 className="section-title">What Our Guests Say</h2></div>
@@ -463,6 +487,39 @@ function Testimonial({ testimonial }) {
 
 function CtaBand({ title, text, href, button }) {
   return <section className="cta-band"><div className="container"><h2>{title}</h2><p>{text}</p><a href={href} className="btn cta-button">{button}</a></div></section>;
+}
+
+function HomeFaqs() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: homeFaqs.map(({ question, answer }) => ({
+      '@type': 'Question',
+      name: question,
+      acceptedAnswer: { '@type': 'Answer', text: answer }
+    }))
+  };
+
+  return (
+    <section className="faq-section">
+      <div className="container">
+        <div className="section-head">
+          <span className="section-tag">Plan With Confidence</span>
+          <h2 className="section-title">Kenya Safari &amp; Tour FAQs</h2>
+          <p className="section-sub">Quick answers about planning a trip with Trekrilluxe Tours and Safaris.</p>
+        </div>
+        <div className="faq-list">
+          {homeFaqs.map(({ question, answer }) => (
+            <details className="faq-item" key={question}>
+              <summary>{question}</summary>
+              <p>{answer}</p>
+            </details>
+          ))}
+        </div>
+      </div>
+      <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
+    </section>
+  );
 }
 
 function ToursPage() {
@@ -1009,7 +1066,20 @@ function App() {
     document.title = details.title;
     const description = document.querySelector('meta[name="description"]');
     if (description) description.setAttribute('content', details.description);
-  }, [details]);
+    const pageUrl = new URL(window.location.pathname, 'https://trekrilluxetours.co.ke').href;
+    const setMetaContent = (selector, content) => {
+      const element = document.querySelector(selector);
+      if (element) element.setAttribute('content', content);
+    };
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute('href', pageUrl);
+    setMetaContent('meta[property="og:title"]', details.title);
+    setMetaContent('meta[property="og:description"]', details.description);
+    setMetaContent('meta[property="og:url"]', pageUrl);
+    setMetaContent('meta[name="twitter:title"]', details.title);
+    setMetaContent('meta[name="twitter:description"]', details.description);
+    setMetaContent('meta[name="robots"]', activePage === 'admin' || activePage === 'notFound' ? 'noindex, nofollow' : 'index, follow');
+  }, [activePage, details]);
 
   useEffect(() => {
     if (activePage === 'admin' || activePage === 'notFound') return;
